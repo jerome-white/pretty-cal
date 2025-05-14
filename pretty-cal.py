@@ -10,7 +10,7 @@ from dataclasses import dataclass, replace
 class Month:
     month: int
     year: int
-    _months: ClassVar[int] = 12
+    _months: ClassVar[int] = len(cal.month_name) - 1
 
     def __add__(self, months):
         month = self.month + months
