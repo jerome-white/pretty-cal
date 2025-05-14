@@ -113,6 +113,7 @@ if __name__ == '__main__':
     arguments.add_argument('--months', type=int)
     arguments.add_argument('--spacing', type=int, default=1)
     arguments.add_argument('--day-length', type=int)
+    arguments.add_argument('--start')
     args = arguments.parse_args()
 
     cal.setfirstweekday(cal.SUNDAY)
@@ -124,7 +125,12 @@ if __name__ == '__main__':
         err = f'Invalid day length "{args.day_length}": must be larger than 2'
         raise ValueError(err)
 
-    start = Month.from_datetime(datetime.now())
+    if args.start is None:
+        dt = datetime.now()
+    else:
+        dt = datetime.strptime(args.start, '%Y%m')
+    start = Month.from_datetime(dt)
+
     formatter = WeekFormatter(args.spacing, dlen)
     for (i, w) in enumerate(combine(weeks(start, args.months))):
         print(formatter(w, not i))
