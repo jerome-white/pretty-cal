@@ -5,7 +5,7 @@ import functools as ft
 from typing import ClassVar
 from datetime import datetime
 from argparse import ArgumentParser
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 @dataclass
 class Month:
@@ -29,8 +29,8 @@ class Month:
 
 @dataclass
 class Week:
-    days: list
     month: Month
+    days: list
     start: bool = False
 
     def __post_init__(self):
@@ -40,22 +40,30 @@ class Week:
             index = None
         self.start = index is not None
 
-def cycle(month, n):
+    def full(self):
+        return all(self.days)
+
+def weeks(month, n):
     for _ in range(n):
-        yield from cal.monthcalendar(month.year, month.month)
+        for i in cal.monthcalendar(month.year, month.month):
+            yield Week(month, i)
         month += 1
 
-def weeks(months):
-    window = []
-    for (i, m) in enumerate(months):
-        if not i or all(m):
-            yield Week(m)
-        elif window:
-            n = window.pop()
-            days = list(it.starmap(op.add, zip(n, m)))
-            yield Week(days)
+def combine(weeks):
+    last_w = None
+
+    for (i, this_w) in enumerate(weeks):
+        if not i or this_w.full():
+            yield this_w
+        elif last_w is None:
+            last_w = this_w
         else:
-            window.append(m)
+            days = it.starmap(op.add, zip(last_w.days, this_w.days))
+            yield replace(this_w, days=list(days))
+            last_w = None
+
+    if last_w is not None:
+        yield last_w
 
 if __name__ == '__main__':
     arguments = ArgumentParser()
@@ -64,5 +72,5 @@ if __name__ == '__main__':
 
     cal.setfirstweekday(cal.SUNDAY)
     start = Month.from_datetime(datetime.now())
-    for i in weeks(cycle(start, args.months)):
+    for i in combine(weeks(start, args.months)):
         print(i)
