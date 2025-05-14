@@ -49,22 +49,40 @@ class Week:
         return all(self)
 
 class WeekFormatter:
-    def __init__(self, msep=3, dsep=2):
-        self.msep = ' ' * msep
-        self.dsep = dsep
+    _d_sep = 2
 
-    def __call__(self, week):
-        header = str(week.month)
+    def __init__(self, sep):
+        self.m_sep = ' ' * sep
+
+    def __call__(self, week, header=False):
+        month = str(week.month)
         if not week.start:
-            header = ' ' * len(header)
-        body = ' '.join(self.days(week))
+            month = ' ' * len(month)
+        day = ' '.join(self.days(week))
 
-        return '{}{}{}'.format(header, self.msep, body)
+        wstring = [
+            self.line(month, day)
+        ]
+        if header:
+            m = ' ' * len(month)
+            w = ' '.join(dnames())
+            wstring.append(self.line(m, w))
+
+        return '\n'.join(reversed(wstring))
 
     def days(self, week):
         for w in week:
             d = str(w if w else '')
-            yield d.rjust(self.dsep)
+            yield d.rjust(self._d_sep)
+
+    def line(self, month, week):
+        return '{}{}{}'.format(month, self.m_sep, week)
+
+def dnames():
+    n = len(cal.day_abbr)
+    for (i, _) in enumerate(cal.day_abbr, 1):
+        day = cal.day_abbr[i % n]
+        yield day[:2]
 
 def weeks(month, n):
     for _ in range(n):
@@ -91,10 +109,11 @@ def combine(weeks):
 if __name__ == '__main__':
     arguments = ArgumentParser()
     arguments.add_argument('--months', type=int)
+    arguments.add_argument('--month-week-sep', type=int, default=1)
     args = arguments.parse_args()
 
     cal.setfirstweekday(cal.SUNDAY)
     start = Month.from_datetime(datetime.now())
-    formatter = WeekFormatter()
-    for i in combine(weeks(start, args.months)):
-        print(formatter(i))
+    formatter = WeekFormatter(args.month_week_sep)
+    for (i, w) in enumerate(combine(weeks(start, args.months))):
+        print(formatter(w, not i))
