@@ -1,6 +1,7 @@
 import operator as op
 import calendar as cal
 import itertools as it
+import functools as ft
 from typing import ClassVar
 from datetime import datetime
 from argparse import ArgumentParser
@@ -49,10 +50,17 @@ class Week:
         return all(self)
 
 class WeekFormatter:
-    _d_sep = 2
+    @ft.cached_property
+    def dnames(self):
+        n = len(cal.day_abbr)
 
-    def __init__(self, sep):
+        iterable = map(op.itemgetter(0), enumerate(cal.day_abbr, 1))
+        week = (cal.day_name[x % n][:self.dlen] for x in iterable)
+        return list(self.days(week))
+
+    def __init__(self, sep, dlen):
         self.m_sep = ' ' * sep
+        self.dlen = dlen
 
     def __call__(self, week, header=False):
         month = str(week.month)
@@ -65,7 +73,7 @@ class WeekFormatter:
         ]
         if header:
             m = ' ' * len(month)
-            w = ' '.join(dnames())
+            w = ' '.join(self.dnames)
             wstring.append(self.line(m, w))
 
         return '\n'.join(reversed(wstring))
@@ -73,16 +81,10 @@ class WeekFormatter:
     def days(self, week):
         for w in week:
             d = str(w if w else '')
-            yield d.rjust(self._d_sep)
+            yield d.rjust(self.dlen)
 
     def line(self, month, week):
         return '{}{}{}'.format(month, self.m_sep, week)
-
-def dnames():
-    n = len(cal.day_abbr)
-    for (i, _) in enumerate(cal.day_abbr, 1):
-        day = cal.day_abbr[i % n]
-        yield day[:2]
 
 def weeks(month, n):
     for _ in range(n):
