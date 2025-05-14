@@ -22,6 +22,9 @@ class Month:
 
         return type(self)(month, year)
 
+    def __str__(self):
+        return '{} {}'.format(cal.month_abbr[self.month].upper(), self.year)
+
     @classmethod
     def from_datetime(cls, dt):
         return cls(dt.month, dt.year)
@@ -38,6 +41,14 @@ class Week:
         except ValueError:
             index = None
         self.start = index is not None
+
+    def __str__(self):
+        header = str(self.month)
+        if not self.start:
+            header = ' ' * len(header)
+        body = ('{:>2}'.format(x if x else '') for x in self.days)
+
+        return '{}{}{}'.format(header, ' ' * 3, ' '.join(body))
 
     def full(self):
         return all(self.days)
