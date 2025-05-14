@@ -1,7 +1,6 @@
 import operator as op
 import calendar as cal
 import itertools as it
-import functools as ft
 from typing import ClassVar
 from datetime import datetime
 from argparse import ArgumentParser
