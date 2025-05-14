@@ -42,16 +42,29 @@ class Week:
             index = None
         self.start = index is not None
 
-    def __str__(self):
-        header = str(self.month)
-        if not self.start:
-            header = ' ' * len(header)
-        body = ('{:>2}'.format(x if x else '') for x in self.days)
-
-        return '{}{}{}'.format(header, ' ' * 3, ' '.join(body))
+    def __iter__(self):
+        yield from self.days
 
     def full(self):
-        return all(self.days)
+        return all(self)
+
+class WeekFormatter:
+    def __init__(self, msep=3, dsep=2):
+        self.msep = ' ' * msep
+        self.dsep = dsep
+
+    def __call__(self, week):
+        header = str(week.month)
+        if not week.start:
+            header = ' ' * len(header)
+        body = ' '.join(self.days(week))
+
+        return '{}{}{}'.format(header, self.msep, body)
+
+    def days(self, week):
+        for w in week:
+            d = str(w if w else '')
+            yield d.rjust(self.dsep)
 
 def weeks(month, n):
     for _ in range(n):
@@ -82,5 +95,6 @@ if __name__ == '__main__':
 
     cal.setfirstweekday(cal.SUNDAY)
     start = Month.from_datetime(datetime.now())
+    formatter = WeekFormatter()
     for i in combine(weeks(start, args.months)):
-        print(i)
+        print(formatter(i))
