@@ -111,11 +111,20 @@ def combine(weeks):
 if __name__ == '__main__':
     arguments = ArgumentParser()
     arguments.add_argument('--months', type=int)
-    arguments.add_argument('--month-week-sep', type=int, default=1)
+    arguments.add_argument('--spacing', type=int, default=1)
+    arguments.add_argument('--day-length', type=int)
     args = arguments.parse_args()
 
     cal.setfirstweekday(cal.SUNDAY)
+    if args.day_length is None:
+        dlen = max(map(len, cal.day_name))
+    elif args.day_length > 1:
+        dlen = args.day_length
+    else:
+        err = f'Invalid day length "{args.day_length}": must be larger than 2'
+        raise ValueError(err)
+
     start = Month.from_datetime(datetime.now())
-    formatter = WeekFormatter(args.month_week_sep)
+    formatter = WeekFormatter(args.spacing, dlen)
     for (i, w) in enumerate(combine(weeks(start, args.months))):
         print(formatter(w, not i))
