@@ -23,7 +23,7 @@ class Month:
         return type(self)(month, year)
 
     def __str__(self):
-        return '{} {}'.format(cal.month_abbr[self.month].upper(), self.year)
+        return '{} {}'.format(cal.month_abbr[self.month], self.year)
 
     @classmethod
     def from_datetime(cls, dt):
