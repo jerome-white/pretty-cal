@@ -57,9 +57,9 @@ class WeekFormatter:
         names.rotate()
         return list(self.days(x[:self.dlen] for x in names))
 
-    def __init__(self, sep, dlen):
+    def __init__(self, sep, dlen=None):
         self.m_sep = ' ' * sep
-        self.dlen = dlen
+        self.dlen = dlen or max(map(len, cal.day_name))
 
     def __call__(self, week, header=False):
         month = str(week.month)
@@ -116,12 +116,8 @@ if __name__ == '__main__':
     args = arguments.parse_args()
 
     cal.setfirstweekday(cal.SUNDAY)
-    if args.day_length is None:
-        dlen = max(map(len, cal.day_name))
-    elif args.day_length > 1:
-        dlen = args.day_length
-    else:
-        err = f'Invalid day length "{args.day_length}": must be larger than 2'
+    if args.day_length is not None and args.day_length < 2:
+        err = 'Invalid day length "{args.day_length}": must be larger than 2'
         raise ValueError(err)
 
     if args.start is None:
@@ -130,6 +126,6 @@ if __name__ == '__main__':
         dt = datetime.strptime(args.start, '%Y%m')
     start = Month.from_datetime(dt)
 
-    formatter = WeekFormatter(args.spacing, dlen)
+    formatter = WeekFormatter(args.spacing, args.day_length)
     for (i, w) in enumerate(combine(weeks(start, args.months))):
         print(formatter(w, not i))
