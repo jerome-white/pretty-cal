@@ -2,6 +2,7 @@ import operator as op
 import calendar as cal
 import itertools as it
 import functools as ft
+import collections as cl
 from typing import ClassVar
 from datetime import datetime
 from argparse import ArgumentParser
@@ -52,11 +53,9 @@ class Week:
 class WeekFormatter:
     @ft.cached_property
     def dnames(self):
-        n = len(cal.day_abbr)
-
-        iterable = map(op.itemgetter(0), enumerate(cal.day_abbr, 1))
-        week = (cal.day_name[x % n][:self.dlen] for x in iterable)
-        return list(self.days(week))
+        names = cl.deque(cal.day_name)
+        names.rotate()
+        return list(self.days(x[:self.dlen] for x in names))
 
     def __init__(self, sep, dlen):
         self.m_sep = ' ' * sep
